@@ -86,6 +86,9 @@ class VisualsNode(Thread, Node):
         # message type: planner_msg
         # callback:cb_path_planner
         # add here your solution
+        self.subscription = self.create_subscription(
+            planner_msg, "/path_planner/msg", self.cb_path_planner
+        )
 
         # ------------------------------------------
         # TODO: Implement the Kiwibot status subscriber,
