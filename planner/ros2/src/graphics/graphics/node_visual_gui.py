@@ -333,6 +333,8 @@ class VisualsNode(Thread, Node):
 
         # -----------------------------------------
         # Insert you solution here
+        l_img = self._win_background
+        s_img = self._kiwibot_img
 
         return l_img  # remove this line when implement your solution
 
@@ -417,7 +419,7 @@ class VisualsNode(Thread, Node):
 
         # -----------------------------------------
         # Insert you solution here
-        image = cv2.imread(self.img_src)
+        image = cv2.imread(self._win_background)
         radius = 15
         color = (0, 0, 255)
         thickness = 2
@@ -426,6 +428,8 @@ class VisualsNode(Thread, Node):
             center_coordinate = land_mark
 
             image = cv2.circle(image, center_coordinate, radius, color, thickness)
+
+        return image
 
         # -----------------------------------------
 
