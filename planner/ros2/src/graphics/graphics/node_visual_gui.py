@@ -98,6 +98,10 @@ class VisualsNode(Thread, Node):
         # add here your solution
         self.msg_kiwibot = kiwibot_msg()
 
+        self.subscription = self.create_subscription(
+            kiwibot_msg, "/kiwibot/status", self.cb_kiwibot_status
+        )
+
         # ------------------------------------------
 
         self.turn_robot(heading_angle=float(os.getenv("BOT_INITIAL_YAW", default=0.0)))
