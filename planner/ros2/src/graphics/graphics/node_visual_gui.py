@@ -87,7 +87,7 @@ class VisualsNode(Thread, Node):
         # callback:cb_path_planner
         # add here your solution
         self.subscription = self.create_subscription(
-            planner_msg, "/path_planner/msg", self.cb_path_planner
+            planner_msg, "/path_planner/msg", self.cb_path_planner, 10
         )
 
         # ------------------------------------------
@@ -99,7 +99,7 @@ class VisualsNode(Thread, Node):
         self.msg_kiwibot = kiwibot_msg()
 
         self.subscription = self.create_subscription(
-            kiwibot_msg, "/kiwibot/status", self.cb_kiwibot_status
+            kiwibot_msg, "/kiwibot/status", self.cb_kiwibot_status, 10
         )
 
         # ------------------------------------------
@@ -417,7 +417,15 @@ class VisualsNode(Thread, Node):
 
         # -----------------------------------------
         # Insert you solution here
-        pass
+        image = cv2.imread(self.img_src)
+        radius = 15
+        color = (0, 0, 255)
+        thickness = 2
+
+        for land_mark in land_marks:
+            center_coordinate = land_mark
+
+            image = cv2.circle(image, center_coordinate, radius, color, thickness)
 
         # -----------------------------------------
 
