@@ -478,6 +478,45 @@ class PlannerNode(Node):
         # "t": [float](time for angle a),
         # "dt": [float](sept of time for angle a, is constant element)
         # Do not forget and respect the keys names
+        dt = np.sqrt((dst[0] - src[0]) ** 2 + (dst[1] - src[1]) ** 2)
+        vmax = 1.5 * (dt / time)
+        a = vmax / (time * pt)
+        d = 0
+        angle = np.arctan((dst[1] - src[1]) / (dst[0] - src[0]))
+        mult = 1 if (dst[0] - src[0]) > 0 else -1
+        xi = src[0]
+        yi = src[1]
+
+        for i in range(0, n):
+            t = (time / (n - 1)) * i
+            x = 0
+            y = 0
+
+            if t < time * pt:
+                v0 = a * t
+                rho = d + v0 * t + a * t ** 2
+                x = np.cos(angle) * mult / rho
+                y = np.sin(angle) * mult / rho
+                d = rho
+
+            elif t > time - time * pt:
+                v0 = a * (time - t)
+                rho = d + v0 * t - a * t ** 2
+                x = np.cos(angle) * mult / rho
+                y = np.sin(angle) * mult / rho
+                d = rho
+
+            else:
+                rho = d + vmax * (time / (n - 1))
+                x = np.cos(angle) * mult / rho
+                y = np.sin(angle) * mult / rho
+                d = rho
+
+            xi = xi + x
+            yi = yi + y
+
+            wp = {"idx": i, "pt": (xi, yi), "t": float(t), "dt": float(dt)}
+            way_points.append(wp)
 
         # ---------------------------------------------------------------------
 
