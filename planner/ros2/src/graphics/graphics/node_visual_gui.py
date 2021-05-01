@@ -8,6 +8,7 @@ Code Information:
 """
 
 # =============================================================================
+from utils.python_utils import overlay_image
 import numpy as np
 import cv2
 import copy
@@ -24,6 +25,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import qos_profile_sensor_data
 from rclpy.logging import get_logger
 from rclpy.node import Node
+
 
 from utils.python_utils import printlog
 from utils.python_utils import print_list_text
@@ -333,10 +335,9 @@ class VisualsNode(Thread, Node):
 
         # -----------------------------------------
         # Insert you solution here
-        l_img = self._win_background
-        s_img = self._kiwibot_img
+        n_img = overlay_image(l_img, s_img, pos, transparency)
 
-        return l_img  # remove this line when implement your solution
+        return n_img  # remove this line when implement your solution
 
         # -----------------------------------------
 
@@ -419,17 +420,19 @@ class VisualsNode(Thread, Node):
 
         # -----------------------------------------
         # Insert you solution here
-        image = cv2.imread(self._win_background)
+
         radius = 15
         color = (0, 0, 255)
         thickness = 2
 
+        print("Longitud puntos:", len(land_marks))
+
         for land_mark in land_marks:
             center_coordinate = land_mark
 
-            image = cv2.circle(image, center_coordinate, radius, color, thickness)
-
-        return image
+            self._win_background = cv2.circle(
+                self._win_background, center_coordinate, radius, color, thickness
+            )
 
         # -----------------------------------------
 
