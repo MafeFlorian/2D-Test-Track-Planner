@@ -31,6 +31,14 @@ Speaker::Speaker(rclcpp::NodeOptions &options) : Node("speaker", "interfaces", o
     * Find Documentation here:
     * https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html#write-the-subscriber-node
    ********************************************/
+    class AmazingSpeakerSubscriber : public rclpp::Node
+    public:
+    AmazingSpeakerSubscriber()
+    : Node("m_speaker_sub")
+    {
+    subscription_ = this->create_subscription<std_msgs::msg::Int8>(
+    "node_planner", 10, std::bind(&AmazingSpeakerSubscriber::speakerCb, this, _1));
+    }
 
    /********************************************
     * END CODE 
