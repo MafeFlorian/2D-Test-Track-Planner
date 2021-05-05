@@ -478,44 +478,76 @@ class PlannerNode(Node):
         # "t": [float](time for angle a),
         # "dt": [float](sept of time for angle a, is constant element)
         # Do not forget and respect the keys names
-        dt = np.sqrt((dst[0] - src[0]) ** 2 + (dst[1] - src[1]) ** 2)
-        vmax = 1.5 * (dt / time)
+
+        # euclidean distance
+        e = np.sqrt((dst[0] - src[0]) ** 2 + (dst[1] - src[1]) ** 2)
+        # linear velocity
+        vmax = e / (time * (1 - pt))
+        # acceleration
         a = vmax / (time * pt)
+        # initial distance
         d = 0
+        # angle taking into account x and y distance between origin and destination
         angle = np.arctan((dst[1] - src[1]) / (dst[0] - src[0]))
+        # mult used to fix cuadrant issues
         mult = 1 if (dst[0] - src[0]) > 0 else -1
+        # initial positions for x and y
         xi = src[0]
         yi = src[1]
 
+        v = 0
+
+        dt = float(time / n)
+
         for i in range(0, n):
-            t = (time / (n - 1)) * i
+            # know the fraction of time
+            t = dt * i
             x = 0
             y = 0
 
+            # three trapezoid sections
+
+            # speed increases
             if t < time * pt:
-                v0 = a * t
-                rho = d + v0 * t + a * t ** 2
+                if t + dt > time * pt:
+                    # case when the waypoint cross two types of state, increasing and constant
+                    rho = d + v * (dt + time * pt) + a * (dt + time * pt) ** 2
+                    rho = d + v * (time * pt - dt)
+
+                else:
+                    # current position, this is a vector
+                    rho = d + v * dt + a * dt ** 2
+                    # find  x and y distance
+                    x = np.cos(angle) * mult / rho
+                    y = np.sin(angle) * mult / rho
+                    d = rho
+                    # velocity
+                    v = v + a * dt
+            # speed decreases
+            elif t > time * (1 - pt):
+
+                rho = d + v * dt - a * dt ** 2
                 x = np.cos(angle) * mult / rho
                 y = np.sin(angle) * mult / rho
                 d = rho
-
-            elif t > time - time * pt:
-                v0 = a * (time - t)
-                rho = d + v0 * t - a * t ** 2
-                x = np.cos(angle) * mult / rho
-                y = np.sin(angle) * mult / rho
-                d = rho
-
+                # velocity
+                v = v - a * dt
+            # constant speed
             else:
-                rho = d + vmax * (time / (n - 1))
-                x = np.cos(angle) * mult / rho
-                y = np.sin(angle) * mult / rho
-                d = rho
+                if t + dt > time * (1 - pt):
+                    # case when the waypoint cross two types of state, decreasing and constant
+                    rho = d + v * (dt + time * pt) - a * (dt + time * pt) ** 2
+                    rho = d + v * (time * pt - dt)
+                else:
+                    rho = d + v * dt
+                    x = np.cos(angle) * mult / rho
+                    y = np.sin(angle) * mult / rho
+                    d = rho
 
             xi = xi + x
             yi = yi + y
 
-            wp = {"idx": i, "pt": (xi, yi), "t": float(t), "dt": float(dt)}
+            wp = {"idx": i, "pt": (xi, yi), "t": float(t + dt), "dt": dt}
             way_points.append(wp)
 
         # ---------------------------------------------------------------------
@@ -542,7 +574,41 @@ class PlannerNode(Node):
         """
 
         turn_points = []
+
+        # dst is the target angle in the robot reference frame
+
+        wmax = dst / (time * (1 - pt))
+        a = wmax / (time * pt)
+        d = 0
+
+        dt = float(time / n)
+        # angle
+        angle = 0
+        # initial speed
+        w = 0
+
+        for i in range(0, n):
+
+            t = dt * i
+
+            # turn speed increases
+            if t < time * pt:
+                angle = w * dt + (a * dt ** 2) / 2
+                w = w + a * t
+
+            # turn speed decreases
+            elif t > time - time * pt:
+                angle = w * dt - (a * dt ** 2) / 2
+                w = w - a * dt
+            # constat angle
+            else:
+                angle = w * dt
+
+            tp = {"a": angle, "idx": (i), "t": float(t + dt), "dt": dt}
+            turn_points.append(tp)
+
         if dst == 0.0:
+
             return turn_points
 
         # ---------------------------------------------------------------------

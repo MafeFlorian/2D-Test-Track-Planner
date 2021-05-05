@@ -69,6 +69,7 @@ class VisualsNode(Thread, Node):
         # ---------------------------------------------------------------------
         # Window properties
         self._win_name = "planner_window"
+
         self._win_size = (640, 480)  # maps window shape/size
         self._win_time = 100
 
@@ -88,6 +89,8 @@ class VisualsNode(Thread, Node):
         # message type: planner_msg
         # callback:cb_path_planner
         # add here your solution
+
+        # Path planner status subscriber
         self.subscription = self.create_subscription(
             planner_msg, "/path_planner/msg", self.cb_path_planner, 10
         )
@@ -100,6 +103,7 @@ class VisualsNode(Thread, Node):
         # add here your solution
         self.msg_kiwibot = kiwibot_msg()
 
+        # Kiwibot status subscriber
         self.subscription = self.create_subscription(
             kiwibot_msg, "/kiwibot/status", self.cb_kiwibot_status, 10
         )
@@ -335,7 +339,10 @@ class VisualsNode(Thread, Node):
 
         # -----------------------------------------
         # Insert you solution here
-        n_img = overlay_image(l_img, s_img, pos, transparency)
+        # npos allow to center the robot image
+        npos = (pos[0] - int(s_img.shape[0] / 2), pos[1] - int(s_img.shape[1] / 2))
+        # use overlay_image function with the function parameters
+        n_img = overlay_image(l_img, s_img, npos, transparency)
 
         return n_img  # remove this line when implement your solution
 
@@ -356,10 +363,10 @@ class VisualsNode(Thread, Node):
         win_img, robot_coord = self.crop_map(coord=coord)
 
         # Draws robot in maps image
-        # if coord[0] and coord[1]:
-        # win_img = self.draw_robot(
-        #     l_img=win_img, s_img=self._kiwibot_img, pos=robot_coord
-        # )
+        if coord[0] and coord[1]:
+            win_img = self.draw_robot(
+                l_img=win_img, s_img=self._kiwibot_img, pos=robot_coord
+            )
 
         # Draw descriptions
         str_list = [
@@ -421,15 +428,17 @@ class VisualsNode(Thread, Node):
         # -----------------------------------------
         # Insert you solution here
 
+        # circle parameters
+
         radius = 15
         color = (0, 0, 255)
         thickness = 2
 
-        print("Longitud puntos:", len(land_marks))
-
+        # loop to iterate in land_marks list
         for land_mark in land_marks:
+            # the circle center correspond to each land mark coordinate
             center_coordinate = land_mark
-
+            # draw the circle over the background image
             self._win_background = cv2.circle(
                 self._win_background, center_coordinate, radius, color, thickness
             )
